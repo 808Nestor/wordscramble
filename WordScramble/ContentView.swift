@@ -86,23 +86,34 @@ struct ContentView: View {
     }
     
     func startGame(){
+        // 1. identify source location,
+        // 2. then get the contents as a string of text
+        // 3. then break up the single string of text into words
+        // 4. finally, grab a random word or use a default word
+        // IF possible, LET startWordsURL be set to "start.txt" file inside this app's resource bundle
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt"){
+            // and then, IF possible LET startWords be set to contents of the file. Try to format the content as a string or return Nil if you cannot.
             if let startWords = try? String(contentsOf: startWordsURL){
+                // take the long string of text and seperate the words out by the newline character. This converts a long "sentence" of characters into a "vertical" list of words.
                 let allWords = startWords.components(separatedBy: "\n")
+                // THIS is what we are trying to arrive at after all the checks. Make rootWord set to a random word from the start.txt file, otherwise default to "rugrat"
                 rootWord = allWords.randomElement() ?? "rugrat"
                 return
             }
         }
+        // one of the steps above failed, so show an error.
         fatalError("Could not load start.txt file from bundle.")
     }
     
     func isOriginal(word: String) -> Bool {
+        // returns "true" if the word submitted by user is not already in list of used words
         !usedWords.contains(word)
     }
     
     func isPossible(word: String) -> Bool {
+        // a temporary copy of the root word we can examine
         var tempWord = rootWord
-
+        // check each letter of the word submitted for a matching letter in the root word. If at any time no matching letter is found return "False". If all letters match, the loop will exit.
         for letter in word {
             if let pos = tempWord.firstIndex(of: letter) {
                 tempWord.remove(at: pos)
@@ -110,17 +121,22 @@ struct ContentView: View {
                 return false
             }
         }
+        // the loop above exited. all letters were matched which means the new word can be spelled using the letters from the root word, therefore return "True"
         return true
     }
     
+    // check if the word exists in the English Dictionary. CHALLENGE: this code relies on the older/uglier programming language called "Objective C" to access the dictionary. 
     func isReal(word: String) -> Bool {
+        // grab a copy of the ugly text checking function
         let checker = UITextChecker()
+        
         let range = NSRange(location: 0, length: word.utf16.count)
         let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
 
         return misspelledRange.location == NSNotFound
     }
     
+    //  a function to match up our error variable names on the left with the system's variable on the right
     func wordError(title: String, message: String) {
         errorTitle = title
         errorMessage = message
